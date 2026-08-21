@@ -1,7 +1,7 @@
 # CHARTER - Equipo A: MediTriage Triage
 
 ## Misión del Equipo
-Desarrollar una plataforma inteligente de priorización de pacientes para centros de atención primaria en Chile que utilice IA para reducir tiempos de espera en urgencias, respetando rigurosamente la normativa de protección de datos sensibles.
+Desarrollar una plataforma inteligente de priorización de pacientes para centros de atención primaria en Chile que utilice IA para reducir tiempos de espera en urgencias, respetando rigurosamente la Ley 19.628 y Ley 21.719.
 
 ## Visión
 Implementar un sistema de triaje asistido por IA que mejore la experiencia del paciente y optimice la asignación de recursos médicos en centros de atención primaria.
@@ -34,6 +34,19 @@ Implementar un sistema de triaje asistido por IA que mejore la experiencia del p
 - **Code Review Session** (Semanal): Revisión de PRs importantes y patrones
 - **Retrospective** (Cada 2 semanas): Lecciones aprendidas y mejoras de proceso
 
+## Definition of Done (DoD)
+Una tarea se considera completada cuando cumple con ALL los siguientes criterios:
+
+1. ✅ **Código Revisado**: Mínimo 1 integrante del equipo ha revisado y aprobado el código
+2. ✅ **Pruebas Funcionales**: Tests unitarios ejecutados exitosamente (80% cobertura en módulos críticos)
+3. ✅ **Documentación Actualizada**: READMEs, ADRs o comentarios en código actualizados según cambios
+4. ✅ **Sin Errores Críticos**: Validación de seguridad, encriptación y cumplimiento de Ley 19.628/21.719
+5. ✅ **Cumple Requisitos Funcionales**: La funcionalidad se ajusta exactamente a lo descrito en la user story
+6. ✅ **Build & Deploy**: El código se integra sin conflictos y pasa el pipeline de CI/CD
+7. ✅ **Trazabilidad**: Todos los cambios están registrados en el audit log (especialmente para funciones IA)
+
+**Responsable**: Product Owner + Tech Lead validan el cumplimiento de DoD antes del merge a rama principal.
+
 ## Funcionalidades Core
 1. ✅ Registro de paciente con validación de RUT y consentimiento informado
 2. ✅ Formulario de síntomas + captura de signos vitales
@@ -56,7 +69,7 @@ Implementar un sistema de triaje asistido por IA que mejore la experiencia del p
 - Satisfacción del usuario médico >4.5/5
 
 ---
-**Versión**: 1.0  
+**Versión**: 1.1  
 **Fecha de Creación**: 21 de agosto de 2026  
 **Última Actualización**: 21 de agosto de 2026  
 **Propietario**: Equipo A MediTriage
