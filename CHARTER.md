@@ -10,20 +10,18 @@ Implementar un sistema de triaje asistido por IA que mejore la experiencia del p
 - **Seguridad de Datos**: Cumplimiento estricto de Ley 19.628 y Ley 21.719 (protección de datos sensibles)
 - **Transparencia**: Explicabilidad de todas las recomendaciones del motor IA
 - **Calidad Clínica**: Priorizamos decisiones médicas éticas y basadas en evidencia
-- **Colaboración**: Trabajo en equipo integrado entre desarrolladores, médicos y expertos en compliance
-- **Iteración Rápida**: Mejora continua basada en feedback del usuario y auditoría
+- **Colaboración**: Trabajo en equipo integrado entre desarrolladores.
+- **Iteración Rápida**: Mejora continua basada en feedback.
 
 ## Reglas de Trabajo
 1. **Códigos de Conducta**: Respeto mutuo, puntualidad, participación activa en reuniones
 2. **Propiedad Compartida**: Todos son responsables de la calidad del código y la documentación
-3. **Revisiones Peer**: Todo código debe pasar revisión antes de merge (mínimo 1 aprobación)
+3. **Revisiones Peer**: Todo código debe pasar revisión (mínimo 1 aprobación)
 4. **Documentación**: Cada cambio significativo debe documentarse (ADRs, READMEs actualizados)
-5. **Testing**: Mínimo 80% de cobertura de tests en módulos críticos
-6. **Cumplimiento Legal**: Auditorías regulares de privacidad y seguridad de datos
 
 ## Canales de Comunicación
 - **Reuniones Sincrónicas**: Semanales (día/hora a definir)
-- **Chat**: Slack o similar para comunicación diaria
+- **Chat**: Slack, Whatsapp, Discord y similar para comunicación diaria
 - **Documentación**: GitHub Wiki y READMEs
 - **Issues & PRs**: Seguimiento de trabajo y código
 - **Escalaciones**: Contacto directo con Product Owner ante bloqueadores
