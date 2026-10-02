@@ -1,181 +1,423 @@
 openapi: 3.0.3
 info:
   title: MediTriage API
-  description: API para la gestión clínica, triaje asistido por IA y consentimientos informados.
   version: 1.0.0
+  description: |
+    API de triaje de urgencias con clasificacion ESI asistida por IA.
 
+    Versionado:
+    - La version de la API se indica en la URL usando /api/v1/.
+    - Un cambio incompatible crea una nueva version, por ejemplo /api/v2/.
+    - Los cambios compatibles, como agregar campos opcionales o nuevos endpoints,
+      permanecen en la misma version.
+
+    Deprecacion:
+    - Un endpoint obsoleto se marca con deprecated: true.
+    - La description del endpoint indica la fecha de retiro y su reemplazo.
+    - Se establece un minimo de 6 meses de convivencia entre la marca y el retiro.
+    - Las respuestas del endpoint obsoleto incluyen las cabeceras Deprecation y Sunset.
+    - La deprecacion se comunica en el changelog del repositorio y en esta
+      descripcion de la API.
+  contact:
+    name: Equipo MediTriage
+    email: equipo@meditriage.cl
 servers:
-  - url: https://api.meditriage.com/api/v1
-    description: Servidor de Producción
-
+  - url: https://api.meditriage.cl
+tags:
+  - name: Patients
+    description: Gestion de pacientes
+  - name: Triage
+    description: Sesiones de triaje y clasificacion ESI
+  - name: Consents
+    description: Consentimientos informados
 security:
-  - BearerAuth: []
-
+  - bearerAuth: []
 paths:
-  /patients:
+  /api/v1/patients:
     post:
-      summary: Registro inicial del paciente
-      operationId: registerPatient
-      description: Registra un nuevo paciente en el sistema y retorna su ID generado.
+      tags:
+        - Patients
+      operationId: createPatient
+      summary: Registrar paciente
+      description: Crea un paciente nuevo en el sistema de triaje.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - rut
-                - fullName
-                - birthDate
-              properties:
-                rut:
-                  type: string
-                  example: "12.345.678-9"
-                fullName:
-                  type: string
-                  example: "Juan Pérez Soto"
-                birthDate:
-                  type: string
-                  format: date
-                  example: "1985-04-12"
+              $ref: "#/components/schemas/PatientInput"
+            example:
+              rut: "12.345.678-5"
+              fullName: "Maria Gonzalez Soto"
+              birthDate: "1988-04-12"
       responses:
-        '201':
-          description: Paciente registrado exitosamente.
+        "201":
+          description: Paciente creado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: "pat_9f81b2c3"
-                  createdAt:
-                    type: string
-                    format: date-time
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/PatientOutput"
+              example:
+                id: "pat_01HZX3"
+                rut: "12.345.678-5"
+                fullName: "Maria Gonzalez Soto"
+                createdAt: "2026-10-01T14:32:10Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
 
-  /triage/sessions:
-    post:
-      summary: Iniciar una sesión de triaje
-      operationId: createTriageSession
-      description: Inicia una sesión de triaje y devuelve la clasificación ESI asistida por IA. Protegida contra duplicidad mediante Idempotency-Key.
+  /api/v1/patients/{id}:
+    get:
+      tags:
+        - Patients
+      operationId: getPatientById
+      summary: Obtener paciente por id
+      description: Devuelve los datos de un paciente registrado a partir de su identificador.
       parameters:
-        - in: header
-          name: Idempotency-Key
+        - name: id
+          in: path
           required: true
+          description: Identificador del paciente
           schema:
             type: string
-            format: uuid
-          description: UUID único para prevenir duplicidad clínica ante micro-cortes de red.
+      responses:
+        "200":
+          description: Paciente encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatientOutput"
+              example:
+                id: "pat_01HZX3"
+                rut: "12.345.678-5"
+                fullName: "Maria Gonzalez Soto"
+                createdAt: "2026-10-01T14:32:10Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/triage/sessions:
+    post:
+      tags:
+        - Triage
+      operationId: createTriageSession
+      summary: Crear sesión de triaje
+      description: Inicia una sesión de triaje para un paciente y devuelve la clasificación ESI asistida por IA.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - patientId
-                - symptoms
-                - vitalSigns
-              properties:
-                patientId:
-                  type: string
-                  example: "pat_9f81b2c3"
-                symptoms:
-                  type: array
-                  items:
-                    type: string
-                  example: ["dolor torácico", "dificultad respiratoria"]
-                vitalSigns:
-                  type: object
-                  properties:
-                    heartRate:
-                      type: integer
-                      example: 110
-                    bloodPressure:
-                      type: string
-                      example: "140/90"
+              $ref: "#/components/schemas/TriageSessionInput"
+            example:
+              patientId: "pat_01HZX3"
+              symptoms:
+                - "Dolor de pecho"
+                - "Dificultad para respirar"
+              vitalSigns:
+                heartRate: 95
+                temperature: 37.2
+                oxygenSaturation: 98
       responses:
-        '201':
-          description: Sesión de triaje procesada exitosamente.
+        "201":
+          description: Sesión de triaje creada
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: "tri_4e5d6f7a"
-                  esiLevel:
-                    type: integer
-                    example: 2
-                  status:
-                    type: string
-                    example: "completed"
-                  createdAt:
-                    type: string
-                    format: date-time
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/TriageSessionOutput"
+              example:
+                id: "tri_01HZX4"
+                patientId: "pat_01HZX3"
+                esiLevel: 3
+                status: "completed"
+                createdAt: "2026-10-01T14:35:10Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/triage/sessions/{id}:
+    get:
+      tags:
+        - Triage
+      operationId: getTriageSessionById
+      summary: Obtener sesión de triaje por id
+      description: Devuelve una sesión de triaje con su nivel ESI y estado actual.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador de la sesión de triaje
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sesión de triaje encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriageSessionOutput"
+              example:
+                id: "tri_01HZX4"
+                patientId: "pat_01HZX3"
+                esiLevel: 3
+                status: "completed"
+                createdAt: "2026-10-01T14:35:10Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/consents:
+    post:
+      tags:
+        - Consents
+      operationId: createConsent
+      summary: Registrar consentimiento informado
+      description: Registra el consentimiento informado de un paciente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsentInput"
+            example:
+              patientId: "pat_01HZX3"
+              consentType: "triage_data_processing"
+              accepted: true
+              signedAt: "2026-10-01T14:30:00Z"
+      responses:
+        "201":
+          description: Consentimiento registrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConsentOutput"
+              example:
+                id: "con_01HZX5"
+                patientId: "pat_01HZX3"
+                accepted: true
+                createdAt: "2026-10-01T14:30:05Z"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/ejemplo:
+    get:
+      deprecated: true
+      description: "OBSOLETO. Se retira el 2027-06-30. Usar GET /api/v2/ejemplo."
+      responses:
+        "200":
+          description: Ejemplo de respuesta
 
 components:
   securitySchemes:
-    BearerAuth:
+    bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+      description: Token JWT en la cabecera Authorization (Bearer <token>)
+
+  schemas:
+    PatientInput:
+      type: object
+      required:
+        - rut
+        - fullName
+        - birthDate
+      properties:
+        rut:
+          type: string
+          example: "12.345.678-5"
+        fullName:
+          type: string
+          example: "Maria Gonzalez Soto"
+        birthDate:
+          type: string
+          format: date
+          example: "1988-04-12"
+
+    PatientOutput:
+      type: object
+      required:
+        - id
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: "pat_01HZX3"
+        rut:
+          type: string
+          example: "12.345.678-5"
+        fullName:
+          type: string
+          example: "Maria Gonzalez Soto"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-10-01T14:32:10Z"
+
+    ProblemDetails:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://api.meditriage.cl/errors/validation"
+        title:
+          type: string
+          example: "Datos invalidos"
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: "El campo rut es obligatorio"
+        instance:
+          type: string
+          example: "/api/v1/patients"
+
+    TriageSessionInput:
+      type: object
+      required:
+        - patientId
+        - symptoms
+      properties:
+        patientId:
+          type: string
+          example: "pat_01HZX3"
+        symptoms:
+          type: array
+          items:
+            type: string
+          example:
+            - "Dolor de pecho"
+            - "Dificultad para respirar"
+        vitalSigns:
+          type: object
+          nullable: true
+          example:
+            heartRate: 95
+            temperature: 37.2
+            oxygenSaturation: 98
+
+    TriageSessionOutput:
+      type: object
+      required:
+        - id
+        - patientId
+        - esiLevel
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: "tri_01HZX4"
+        patientId:
+          type: string
+          example: "pat_01HZX3"
+        esiLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 3
+        status:
+          type: string
+          example: "completed"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-10-01T14:35:10Z"
+
+    ConsentInput:
+      type: object
+      required:
+        - patientId
+        - consentType
+        - accepted
+        - signedAt
+      properties:
+        patientId:
+          type: string
+          example: "pat_01HZX3"
+        consentType:
+          type: string
+          example: "triage_data_processing"
+        accepted:
+          type: boolean
+          example: true
+        signedAt:
+          type: string
+          format: date-time
+          example: "2026-10-01T14:30:00Z"
+
+    ConsentOutput:
+      type: object
+      required:
+        - id
+        - patientId
+        - accepted
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: "con_01HZX5"
+        patientId:
+          type: string
+          example: "pat_01HZX3"
+        accepted:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-10-01T14:30:05Z"
 
   responses:
     BadRequest:
-      description: Validación estricta fallida (RFC 7807).
+      description: Solicitud invalida
       content:
         application/problem+json:
           schema:
-            type: object
-            required:
-              - type
-              - title
-              - status
-              - detail
-              - instance
-            properties:
-              type:
-                type: string
-                example: "https://api.meditriage.com/errors/bad-request"
-              title:
-                type: string
-                example: "Bad Request"
-              status:
-                type: integer
-                example: 400
-              detail:
-                type: string
-                example: "El campo 'rut' posee un formato inválido."
-              instance:
-                type: string
-                example: "/api/v1/patients"
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: "https://api.meditriage.cl/errors/validation"
+            title: "Datos invalidos"
+            status: 400
+            detail: "El campo rut es obligatorio"
+            instance: "/api/v1/patients"
 
     Unauthorized:
-      description: Token ausente o inválido (401).
+      description: Token ausente o invalido
       content:
         application/problem+json:
           schema:
-            type: object
-            properties:
-              type:
-                type: string
-                example: "https://api.meditriage.com/errors/unauthorized"
-              title:
-                type: string
-                example: "Unauthorized"
-              status:
-                type: integer
-                example: 401
-              detail:
-                type: string
-                example: "Token de autenticación ausente o expirado."
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: "https://api.meditriage.cl/errors/unauthorized"
+            title: "No autorizado"
+            status: 401
+            detail: "El token de autenticacion es ausente o invalido"
+            instance: "/api/v1/patients"
+
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: "https://api.meditriage.cl/errors/not-found"
+            title: "Recurso no encontrado"
+            status: 404
+            detail: "El paciente solicitado no existe"
+            instance: "/api/v1/patients/pat_999"
