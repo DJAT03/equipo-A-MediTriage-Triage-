@@ -1,0 +1,6 @@
+# Terraform
+.terraform/
+*.tfstate*
+*.tfvars
+
+//Comparación IaC: Terraform ofrece un ecosistema declarativo (HCL) muy maduro y es agnóstico a la nube, lo que evita el vendor lock-in restrictivo de CloudFormation (exclusivo de AWS). Aunque Pulumi permite usar lenguajes de programación reales, añade una curva de aprendizaje innecesaria y mayor complejidad para nuestro equipo de 5 personas. Optamos por Terraform con backend GCS porque nos brinda el equilibrio perfecto entre simplicidad, control seguro del estado remoto con locking nativo, y estandarización para nuestro MVP en Kubernetes.
