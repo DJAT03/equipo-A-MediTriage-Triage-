@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: meditrriage-config
+
+data:
+  APP_NAME: MediTriage
+  ENVIRONMENT: Production
+  PORT: "3000"
