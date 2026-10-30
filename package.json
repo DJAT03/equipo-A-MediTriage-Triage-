@@ -1,0 +1,28 @@
+{
+  "name": "meditriage-api",
+  "version": "1.0.0",
+  "description": "API de MediTriage",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "lint": "eslint .",
+    "test": "jest --coverage"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "statements": 70,
+        "branches": 70,
+        "functions": 70,
+        "lines": 70
+      }
+    }
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "jest": "^29.7.0"
+  }
+}
