@@ -1,1 +1,72 @@
+name: CI/CD Pipeline
 
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  # Job Quality: ESLint, Jest (Cobertura >= 70%) y Semgrep
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        
+      - name: Configurar Node.js 20[cite: 19]
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Instalar dependencias
+        run: npm ci
+        
+      - name: Ejecutar ESLint[cite: 20]
+        run: npm run lint
+        
+      - name: Ejecutar Jest con Cobertura >= 70%[cite: 20, 21]
+        run: npm test
+        
+      - name: Ejecutar SAST con Semgrep[cite: 20]
+        uses: returntocorp/semgrep-action@v1
+
+  # Job Build and Push: Docker Build, GHCR y Tag github.sha
+  build-and-push:
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        
+      - name: Login en GitHub Container Registry (GHCR)[cite: 20, 21]
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Docker Build y Push a GHCR[cite: 20, 21]
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/meditriage-api:${{ github.sha }}
+
+  # Job Promote: Actualizar repo GitOps
+  promote:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+      
+      - name: Actualizar repositorio GitOps[cite: 20]
+        run: |
+          echo "Aquí se ejecutaría el script para actualizar el tag en el repo equipo-a-gitops"
+          echo "Nueva versión desplegada: ${{ github.sha }}"
