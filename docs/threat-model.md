@@ -1,6 +1,10 @@
-### Threat Modeling – API MediTriage (STRIDE)
+### Threat Modeling – meditrriage-api (STRIDE)
 
-El análisis de amenazas de la API MediTriage se realiza mediante el modelo STRIDE, con el objetivo de identificar posibles vulnerabilidades y establecer controles de seguridad que permitan proteger la información médica, garantizar la integridad de los datos y restringir el acceso no autorizado al sistema.
+El análisis de amenazas del microservicio meditrriage-api se realiza mediante el modelo STRIDE, con el objetivo de identificar posibles vulnerabilidades y establecer controles de seguridad que permitan proteger la información médica, garantizar la integridad de los datos y restringir el acceso no autorizado al sistema.
+
+**Activos principales:** Datos de salud de pacientes (PII/PHI), credenciales de acceso del personal médico y registros inmutables de triaje.
+
+**Límites de confianza (Trust Boundaries):** El paso de datos desde la red pública hacia el API, y la conexión interna entre el API y la base de datos.
 
 | **Categoría STRIDE** | **Amenaza identificada** | **Medida de mitigación** |
 |---|---|---|
