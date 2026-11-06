@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Escaneo SCA con Trivy
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'
           severity: 'HIGH,CRITICAL'
@@ -64,7 +64,7 @@ jobs:
       - name: Construir imagen
         run: docker build -f Dockerfile -t meditriage:${{ github.sha }} workflows
       - name: Escanear imagen con Trivy
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: meditriage:${{ github.sha }}
           format: json
