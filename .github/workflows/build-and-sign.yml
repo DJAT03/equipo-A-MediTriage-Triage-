@@ -2,7 +2,7 @@ name: Build, Publish, and Sign Image
 
 on:
   push:
-    branches: [ "pp" ] # O la rama que estén usando para la S10
+    branches: [ "main" ] # O la rama que estén usando para la S10
     tags: [ 'v*.*.*' ]
 
 env:
