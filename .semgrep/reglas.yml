@@ -1,0 +1,17 @@
+rules:
+  - id: no-hardcoded-jwt-secret
+    message: "Se detectó un JWT secret hardcodeado. Usa variables de entorno (process.env)."
+    severity: ERROR
+    languages: [javascript, typescript]
+    patterns:
+      - pattern: jwt.sign(..., "$SECRET", ...)
+      - metavariable-regex:
+          metavariable: "$SECRET"
+          regex: "^[A-Za-z0-9_-]{10,}$"
+
+  - id: no-console-log-in-prod
+    message: "No dejes console.log() sueltos, pueden filtrar información sensible (Info Disclosure)."
+    severity: WARNING
+    languages: [javascript, typescript]
+    patterns:
+      - pattern: console.log(...)
