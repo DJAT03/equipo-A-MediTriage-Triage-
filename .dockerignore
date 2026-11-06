@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+workflows/node_modules
+.env
+.env.*
+!.env.example
+coverage
+terraform
+k8s
+docs
+falco
+*.log
+.DS_Store
