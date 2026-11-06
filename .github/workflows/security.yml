@@ -1,5 +1,7 @@
 name: security
-on: [pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   sast:
@@ -29,6 +31,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - name: Escaneo de secretos
-        uses: gitleaks/gitleaks-action@v2
-        continue-on-error: true
