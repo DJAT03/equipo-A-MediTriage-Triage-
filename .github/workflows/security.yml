@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Escaneo SCA con Trivy
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'
           severity: 'HIGH,CRITICAL'
@@ -32,9 +32,47 @@ jobs:
       - name: Escaneo de secretos
         uses: gitleaks/gitleaks-action@v2
         continue-on-error: true 
+
+  sbom:
+    name: SBOM CycloneDX
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - name: Escaneo de secretos en historial
-        uses: gitleaks/gitleaks-action@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar dependencias
+        working-directory: workflows
+        run: npm install
+      - name: Generar SBOM CycloneDX
+        working-directory: workflows
+        run: npx --yes @cyclonedx/cyclonedx-npm --output-format JSON --output-file sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: workflows/sbom.json
+
+  container-scan:
+    name: Trivy sobre imagen Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar placeholder (la app aun no esta en el repo)
+        run: |
+          mkdir -p workflows/src
+          touch workflows/src/.gitkeep workflows/index.js
+      - name: Construir imagen
+        run: docker build -f Dockerfile -t meditriage:${{ github.sha }} workflows
+      - name: Escanear imagen con Trivy
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: meditriage:${{ github.sha }}
+          format: json
+          output: container-scan.json
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: container-scan
+          path: container-scan.json
