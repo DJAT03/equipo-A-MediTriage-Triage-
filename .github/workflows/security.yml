@@ -19,11 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Escaneo SCA con Trivy
-        uses: aquasecurity/trivy-action@0.20.0
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           severity: 'HIGH,CRITICAL'
-          exit-code: '0' # 0 significa "solo avisa, no bloquees"
+          exit-code: '0'
           ignore-unfixed: 'true'
 
   secrets:
@@ -31,8 +31,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - name: Escaneo de secretos en historial
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true

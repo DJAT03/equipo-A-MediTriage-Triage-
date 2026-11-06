@@ -1,0 +1,42 @@
+# Reglas personalizadas de Falco para MediTriage.
+# Cargar este archivo como reglas adicionales de Falco.
+
+- rule: MediTriage - Shell interactiva dentro de contenedor
+  desc: Detecta la ejecución de shells dentro de un contenedor.
+  condition: >
+    container and
+    evt.type = execve and
+    proc.name in (bash, sh, zsh, ash)
+  output: >
+    Se inició una shell dentro de un contenedor
+    (usuario=%user.name comando=%proc.cmdline contenedor=%container.name
+    namespace=%k8s.ns.name pod=%k8s.pod.name)
+  priority: WARNING
+  tags: [container, process, mitre_execution, meditrriage]
+
+- rule: MediTriage - Escritura en directorios sensibles
+  desc: Detecta intentos de escritura en directorios del sistema desde contenedores.
+  condition: >
+    container and
+    evt.type in (open, openat, openat2) and
+    evt.is_open_write=true and
+    fd.name startswith /etc
+  output: >
+    Escritura detectada en directorio sensible
+    (usuario=%user.name archivo=%fd.name comando=%proc.cmdline
+    contenedor=%container.name namespace=%k8s.ns.name pod=%k8s.pod.name)
+  priority: WARNING
+  tags: [container, filesystem, mitre_persistence, meditrriage]
+
+- rule: MediTriage - Uso de herramientas de cambio de usuario
+  desc: Detecta ejecución de su, sudo o doas dentro de contenedores.
+  condition: >
+    container and
+    evt.type = execve and
+    proc.name in (su, sudo, doas)
+  output: >
+    Herramienta de cambio de usuario ejecutada en contenedor
+    (usuario=%user.name comando=%proc.cmdline contenedor=%container.name
+    namespace=%k8s.ns.name pod=%k8s.pod.name)
+  priority: WARNING
+  tags: [container, privilege_escalation, mitre_privilege_escalation, meditrriage]
