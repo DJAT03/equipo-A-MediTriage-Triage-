@@ -1,42 +1,20 @@
-# Reglas personalizadas de Falco para MediTriage.
-# Cargar este archivo como reglas adicionales de Falco.
+- rule: Terminal Spawned in MediTriage Container
+  desc: Detecta si alguien intenta abrir una consola interactiva (shell) dentro de los contenedores de la app.
+  condition: container and spawned_process and proc.name in (bash, sh, zsh, ksh) and container.image startswith "ghcr.io/djat03/equipo-a-meditriage-triage-"
+  output: "ALERTA CRÍTICA: Intento de terminal interactiva en contenedor detectado (user=%user.name user_loginuid=%user.loginuid process=%proc.name parent=%proc.pname cmdline=%proc.cmdline container_id=%container.id image=%container.image)"
+  priority: CRITICAL
+  tags: [mitre_execution, meditrige_custom]
 
-- rule: MediTriage - Shell interactiva dentro de contenedor
-  desc: Detecta la ejecución de shells dentro de un contenedor.
-  condition: >
-    container and
-    evt.type = execve and
-    proc.name in (bash, sh, zsh, ash)
-  output: >
-    Se inició una shell dentro de un contenedor
-    (usuario=%user.name comando=%proc.cmdline contenedor=%container.name
-    namespace=%k8s.ns.name pod=%k8s.pod.name)
-  priority: WARNING
-  tags: [container, process, mitre_execution, meditrriage]
+- rule: Unauthorized File Write Below Binary Directories
+  desc: Captura intentos de modificar binarios o librerías del sistema del contenedor.
+  condition: evt.type = open and file.target_dir startswith "/usr/bin" or file.target_dir startswith "/bin" or file.target_dir startswith "/sbin" and open_write and container
+  output: "ALERTA DE SEGURIDAD: Escritura no autorizada detectada en directorio de binarios del sistema (user=%user.name process=%proc.name file=%fd.name parent=%proc.pname cmdline=%proc.cmdline)"
+  priority: ERROR
+  tags: [mitre_persistence, meditrige_custom]
 
-- rule: MediTriage - Escritura en directorios sensibles
-  desc: Detecta intentos de escritura en directorios del sistema desde contenedores.
-  condition: >
-    container and
-    evt.type in (open, openat, openat2) and
-    evt.is_open_write=true and
-    fd.name startswith /etc
-  output: >
-    Escritura detectada en directorio sensible
-    (usuario=%user.name archivo=%fd.name comando=%proc.cmdline
-    contenedor=%container.name namespace=%k8s.ns.name pod=%k8s.pod.name)
+- rule: Unexpected Process Executed Network Command
+  desc: Alerta si procesos ajenos al servidor Node de la aplicación realizan conexiones o ejecutan comandos de red.
+  condition: spawned_process and proc.name in (nc, nmap, curl, wget, telnet) and container
+  output: "ALERTA MEDIA: Herramienta de red o recon ejecutada dentro del contenedor (user=%user.name process=%proc.name cmdline=%proc.cmdline container_id=%container.id)"
   priority: WARNING
-  tags: [container, filesystem, mitre_persistence, meditrriage]
-
-- rule: MediTriage - Uso de herramientas de cambio de usuario
-  desc: Detecta ejecución de su, sudo o doas dentro de contenedores.
-  condition: >
-    container and
-    evt.type = execve and
-    proc.name in (su, sudo, doas)
-  output: >
-    Herramienta de cambio de usuario ejecutada en contenedor
-    (usuario=%user.name comando=%proc.cmdline contenedor=%container.name
-    namespace=%k8s.ns.name pod=%k8s.pod.name)
-  priority: WARNING
-  tags: [container, privilege_escalation, mitre_privilege_escalation, meditrriage]
+  tags: [mitre_discovery, meditrige_custom]

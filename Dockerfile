@@ -1,20 +1,13 @@
-# Construcción
-FROM node:20-alpine AS builder
+FROM node:20-alpine
+
 WORKDIR /app
+
 COPY package*.json ./
-RUN npm install
+
+RUN npm install --production
+
 COPY . .
 
-# Producción 
-FROM node:20-alpine
-WORKDIR /app
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-
-COPY --from=builder /app/src ./src 
-COPY --from=builder /app/index.js ./
-
-# Seguridad: No ejecutar como root
-USER node
 EXPOSE 3000
-CMD ["node", "index.js"]
+
+CMD ["node", "src/server.js"]
