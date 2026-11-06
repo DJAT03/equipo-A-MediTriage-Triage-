@@ -57,3 +57,28 @@ jobs:
         with:
           name: sbom
           path: workflows/sbom.json
+
+  container-scan:
+    name: Trivy sobre imagen Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar placeholder (la app aun no esta en el repo)
+        run: |
+          mkdir -p workflows/src
+          touch workflows/src/.gitkeep workflows/index.js
+      - name: Construir imagen
+        run: docker build -f Dockerfile -t meditriage:${{ github.sha }} workflows
+      - name: Escanear imagen con Trivy
+        uses: aquasecurity/trivy-action@0.20.0
+        with:
+          image-ref: meditriage:${{ github.sha }}
+          format: json
+          output: container-scan.json
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: container-scan
+          path: container-scan.json
