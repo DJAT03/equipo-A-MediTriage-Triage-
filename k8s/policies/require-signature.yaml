@@ -1,0 +1,35 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-meditriage-image-signature
+  annotations:
+    policies.kyverno.io/title: Require MediTriage image signatures
+    policies.kyverno.io/category: Supply Chain Security
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Exige que las imágenes de MediTriage estén firmadas con Cosign Keyless
+      por el workflow S10 del repositorio oficial.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: verify-meditriage-image-signature
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      verifyImages:
+        - imageReferences:
+            - "ghcr.io/djat03/meditrriage-api*"
+          required: true
+          verifyDigest: true
+          mutateDigest: true
+          attestors:
+            - count: 1
+              entries:
+                - keyless:
+                    subject: "https://github.com/DJAT03/equipo-A-MediTriage-Triage-/.github/workflows/supply-chain-security.yml@refs/heads/main"
+                    issuer: "https://token.actions.githubusercontent.com"
+                    rekor:
+                      url: "https://rekor.sigstore.dev"
