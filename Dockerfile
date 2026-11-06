@@ -1,20 +1,27 @@
-# Construcción
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY workflows/package.json ./package.json
-RUN npm install
-COPY . .
+# Imagen de dependencias de producción
+FROM node:20-alpine AS dependencies
 
-# Producción 
+WORKDIR /app
+
+COPY package.json ./
+
+RUN npm install --omit=dev --no-audit --no-fund
+
+# Imagen final
 FROM node:20-alpine
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
 WORKDIR /app
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
 
-COPY --from=builder /app/src ./src 
-COPY --from=builder /app/index.js ./
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY package.json ./
+COPY src ./src
 
-# Seguridad: No ejecutar como root
+# Ejecutar con usuario sin privilegios
 USER node
+
 EXPOSE 3000
-CMD ["node", "index.js"]
+
+CMD ["node", "src/server.js"]
