@@ -38,3 +38,22 @@ jobs:
         with: { fetch-depth: 0 }
       - name: Escaneo de secretos en historial
         uses: gitleaks/gitleaks-action@v2
+
+  sbom:
+    name: SBOM CycloneDX
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Instalar dependencias
+        working-directory: workflows
+        run: npm install
+      - name: Generar SBOM CycloneDX
+        working-directory: workflows
+        run: npx --yes @cyclonedx/cyclonedx-npm --output-format JSON --output-file sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: workflows/sbom.json
